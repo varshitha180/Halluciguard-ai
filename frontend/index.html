@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HalluciGuard AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#070b14;
+    --surface:#0e1526;
+    --surface-2:#121b31;
+    --surface-3:#0b1120;
+    --border:#1e2a42;
+    --border-soft:#182238;
+    --text:#e8edf7;
+    --text-dim:#8fa1c0;
+    --text-faint:#5b6d8c;
+    --cyan:#35c8f0;
+    --violet:#8b7cf6;
+    --green:#34d399;
+    --amber:#fbbf24;
+    --red:#f87171;
+    --grad: linear-gradient(135deg, var(--cyan), var(--violet));
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(139,124,246,0.18), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, rgba(53,200,240,0.14), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', ui-sans-serif, system-ui, sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:rgba(53,200,240,0.3); }
+  a{color:inherit;}
+
+  /* ---------- Header (logo untouched) ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 28px;border-bottom:1px solid var(--border-soft);gap:24px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand svg{width:40px;height:40px;flex-shrink:0;}
+  .brand-text h1{font-family:'Sora',sans-serif;font-weight:700;font-size:19px;letter-spacing:-0.02em;margin:0;line-height:1.1;}
+  .brand-text h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .brand-text p{margin:2px 0 0;font-size:12px;color:var(--text-dim);}
+  .strap{font-size:12.5px;color:var(--text-dim);text-align:right;line-height:1.5;}
+  .strap b{color:var(--text);font-weight:600;}
+
+  /* ---------- Shell ---------- */
+  .shell{display:flex;max-width:1240px;margin:0 auto;align-items:flex-start;}
+  .sidebar{
+    width:184px;flex-shrink:0;padding:20px 10px;position:sticky;top:0;
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:9px;
+    font-size:13.5px;font-weight:500;color:var(--text-dim);cursor:pointer;
+    border:1px solid transparent;transition:background .15s, color .15s;
+  }
+  .nav-item:hover{color:var(--text);background:var(--surface-2);}
+  .nav-item.active{color:var(--text);background:var(--surface-2);border-color:var(--border);}
+  .nav-item svg{width:16px;height:16px;opacity:.85;flex-shrink:0;}
+  .sidebar-foot{margin-top:auto;padding:14px 13px;font-size:11px;color:var(--text-faint);line-height:1.6;}
+
+  .main{flex:1;min-width:0;padding:22px 24px 70px;}
+
+  /* ---------- Card base ---------- */
+  .panel{background:linear-gradient(180deg, var(--surface), var(--surface-3));border:1px solid var(--border);border-radius:14px;padding:20px 22px;}
+  .panel-title{font-family:'Sora',sans-serif;font-weight:600;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 15px;color:var(--text);}
+  .panel-title .t{display:flex;align-items:center;gap:8px;}
+  .panel-title svg{width:15px;height:15px;color:var(--cyan);}
+  .view-link{font-size:11.5px;font-weight:600;color:var(--cyan);cursor:pointer;background:none;border:none;padding:0;}
+  .view-link:hover{text-decoration:underline;}
+
+  /* ---------- Search-bar analyze input ---------- */
+  .search-card{padding:16px 18px;}
+  .search-row{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:6px 6px 6px 14px;}
+  .search-row svg{width:16px;height:16px;color:var(--text-faint);flex-shrink:0;}
+  .search-row input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;padding:8px 4px;}
+  .search-row input::placeholder{color:var(--text-faint);}
+  .scan-btn{
+    font-family:'Inter',sans-serif;font-weight:700;font-size:13.5px;padding:10px 20px;border-radius:8px;
+    border:none;background:var(--grad);color:#081018;cursor:pointer;flex-shrink:0;
+    display:flex;align-items:center;gap:7px;transition:filter .15s;
+  }
+  .scan-btn:hover{filter:brightness(1.08);}
+  .scan-btn[disabled]{opacity:.55;cursor:default;}
+  .scan-btn svg{width:14px;height:14px;}
+  .adv-toggle{font-size:12px;color:var(--text-faint);cursor:pointer;margin-top:10px;display:inline-block;}
+  .adv-toggle:hover{color:var(--cyan);}
+  .adv-box{display:none;margin-top:12px;}
+  .adv-box.open{display:block;}
+  .adv-box textarea{
+    width:100%;min-height:78px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;
+    padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13.5px;resize:vertical;outline:none;
+  }
+  .adv-box textarea:focus{border-color:var(--cyan);}
+  .adv-box .lbl{font-size:11.5px;color:var(--text-faint);margin-bottom:6px;}
+
+  #results{margin-top:16px;display:none;flex-direction:column;gap:16px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:16px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:860px){ .row3{grid-template-columns:1fr;} .row2{grid-template-columns:1fr;} }
+
+  /* gauges */
+  .gauge-card{display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 14px;}
+  .gauge-label{font-size:11.5px;color:var(--text-dim);font-weight:700;margin-bottom:12px;letter-spacing:.01em;}
+  .gauge-ring{width:104px;height:104px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;}
+  .gauge-ring::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--ring-color) calc(var(--pct)*1%), var(--border-soft) 0);}
+  .gauge-ring::after{content:'';position:absolute;inset:9px;border-radius:50%;background:var(--surface-3);}
+  .gauge-value{position:relative;z-index:1;font-family:'Sora',sans-serif;font-weight:700;font-size:23px;}
+  .gauge-sub{margin-top:11px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;}
+
+  /* verdict */
+  .verdict-card{display:flex;flex-direction:column;justify-content:center;gap:9px;padding:18px 20px;}
+  .verdict-eyebrow{font-size:11.5px;color:var(--text-dim);font-weight:700;}
+  .verdict-badge{display:inline-flex;align-items:center;gap:9px;font-family:'Sora',sans-serif;font-weight:700;font-size:16px;padding:10px 14px;border-radius:10px;width:fit-content;}
+  .verdict-badge svg{width:18px;height:18px;flex-shrink:0;}
+  .verdict-detail{font-size:12.5px;color:var(--text-dim);line-height:1.55;}
+
+  /* claims */
+  .claim{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--border-soft);}
+  .claim:last-child{border-bottom:none;}
+  .claim-icon{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .claim-icon svg{width:11px;height:11px;}
+  .claim.correct .claim-icon{background:rgba(52,211,153,0.18);color:var(--green);}
+  .claim.incorrect .claim-icon{background:rgba(248,113,113,0.18);color:var(--red);}
+  .claim.uncertain .claim-icon{background:rgba(251,191,36,0.18);color:var(--amber);}
+  .claim-text{font-size:13.3px;line-height:1.45;}
+  .claim-tag{font-size:11px;font-weight:700;margin-left:7px;white-space:nowrap;}
+  .claim.correct .claim-tag{color:var(--green);}
+  .claim.incorrect .claim-tag{color:var(--red);}
+  .claim.uncertain .claim-tag{color:var(--amber);}
+  .claim-explain{font-size:12px;color:var(--text-dim);margin-top:4px;line-height:1.5;display:none;}
+  .claim-explain.show{display:block;}
+
+  /* highlighted response */
+  .hl-box{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 15px;font-size:13.5px;line-height:1.75;}
+  .hl-box span{padding:1px 3px;border-radius:4px;}
+  .seg-correct{background:rgba(52,211,153,0.16);}
+  .seg-suspicious{background:rgba(251,191,36,0.2);text-decoration:underline;text-decoration-color:rgba(251,191,36,0.7);text-decoration-style:solid;}
+  .seg-hallucination{background:rgba(248,113,113,0.22);text-decoration:underline;text-decoration-color:rgba(248,113,113,0.75);}
+  .legend{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-dim);}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+  /* evidence */
+  .ev-tabs{display:flex;gap:8px;margin-bottom:12px;}
+  .ev-tab{font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:20px;}
+  .ev-tab.support{background:rgba(53,200,240,0.14);color:var(--cyan);}
+  .ev-tab.contra{background:rgba(248,113,113,0.14);color:var(--red);}
+  .ev-block{margin-bottom:14px;}
+  .ev-block:last-child{margin-bottom:0;}
+  .ev-line{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--text-dim);line-height:1.55;padding:7px 0;border-bottom:1px solid var(--border-soft);}
+  .ev-line:last-child{border-bottom:none;}
+  .ev-score{flex-shrink:0;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--text);white-space:nowrap;}
+
+  /* hallucination type */
+  .type-badge{display:inline-block;font-size:12px;font-weight:700;padding:6px 13px;border-radius:8px;background:rgba(248,113,113,0.14);color:var(--red);border:1px solid rgba(248,113,113,0.3);margin-bottom:15px;}
+  .type-badge.none{background:rgba(52,211,153,0.14);color:var(--green);border-color:rgba(52,211,153,0.3);}
+  .cvc-sub{font-size:11.5px;font-weight:700;color:var(--text-dim);margin-bottom:10px;}
+  .cvc-row{margin-bottom:10px;}
+  .cvc-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);margin-bottom:5px;}
+  .cvc-track{height:7px;border-radius:6px;background:var(--surface-2);overflow:hidden;}
+  .cvc-fill{height:100%;border-radius:6px;}
+  .severity-tag{display:inline-block;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;margin-top:6px;}
+
+  /* verification signals + source reliability */
+  .sig-row{margin-bottom:12px;}
+  .sig-row:last-child{margin-bottom:0;}
+  .sig-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:5px;}
+  .sig-track{height:7px;border-radius:6px;background:var(--surface-2);overflow:hidden;}
+  .sig-fill{height:100%;border-radius:6px;background:var(--cyan);}
+  .src-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-soft);font-size:12.8px;}
+  .src-item:last-child{border-bottom:none;}
+  .src-name{display:flex;align-items:center;gap:8px;color:var(--text-dim);}
+  .src-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .src-score{font-weight:700;color:var(--text);}
+  .src-note{font-size:11px;color:var(--text-faint);margin-top:10px;}
+
+  /* quick actions */
+  .qa-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .qa-btn{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:12.8px;padding:10px 16px;border-radius:9px;
+    border:1px solid var(--border);cursor:pointer;background:var(--surface-2);color:var(--text);
+    display:inline-flex;align-items:center;gap:7px;transition:border-color .15s;
+  }
+  .qa-btn:hover{border-color:var(--cyan);}
+  .qa-btn svg{width:14px;height:14px;}
+
+  .loading-wrap{display:flex;align-items:center;gap:11px;padding:14px 4px;color:var(--text-dim);font-size:13px;}
+  .spinner{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--cyan);animation:spin .8s linear infinite;flex-shrink:0;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .error-box{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:10px;padding:13px 15px;font-size:12.8px;color:#fca5a5;}
+  .empty-state{color:var(--text-faint);font-size:13px;text-align:center;padding:26px 10px;}
+
+  /* history */
+  .hist-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 13px;border-radius:10px;border:1px solid var(--border);margin-bottom:9px;cursor:pointer;background:var(--surface-2);transition:border-color .15s;}
+  .hist-item:hover{border-color:var(--cyan);}
+  .hist-q{font-size:13px;font-weight:500;color:var(--text);}
+  .hist-meta{font-size:11px;color:var(--text-faint);margin-top:3px;}
+  .hist-tag{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;flex-shrink:0;}
+
+  /* benchmark stat tiles */
+  .bm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media(max-width:700px){ .bm-grid{grid-template-columns:1fr 1fr;} }
+  .bm-tile{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+  .bm-num{font-family:'Sora',sans-serif;font-weight:700;font-size:24px;color:var(--cyan);}
+  .bm-lbl{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
+
+  .settings-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-soft);font-size:13px;}
+  .settings-row:last-child{border-bottom:none;}
+  .settings-row .k{color:var(--text-dim);}
+  .settings-row .v{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+  @media(max-width:720px){
+    .shell{flex-direction:column;}
+    .sidebar{width:100%;flex-direction:row;overflow-x:auto;position:static;padding:10px 16px;border-bottom:1px solid var(--border-soft);}
+    .sidebar-foot{display:none;}
+    .main{padding:18px 14px 60px;}
+    .strap{display:none;}
+    .search-row{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="shieldGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#35c8f0"/>
+          <stop offset="1" stop-color="#8b7cf6"/>
+        </linearGradient>
+      </defs>
+      <path d="M32 3 L57 12 V29 C57 46 46.5 56.5 32 61 C17.5 56.5 7 46 7 29 V12 Z" fill="url(#shieldGrad)" fill-opacity="0.16" stroke="url(#shieldGrad)" stroke-width="2.4"/>
+      <circle cx="24" cy="24" r="1.6" fill="#9fd9f2"/>
+      <circle cx="24" cy="33" r="1.6" fill="#9fd9f2"/>
+      <circle cx="30" cy="28.5" r="1.6" fill="#9fd9f2"/>
+      <path d="M24 24 L24 33 M24 28.5 L30 28.5" stroke="#9fd9f2" stroke-width="1.2" opacity="0.65"/>
+      <path d="M25 39 L31 45 L44 30" stroke="#f4fbff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="brand-text">
+      <h1>HalluciGuard <span>AI</span></h1>
+      <p>Guarding AI against hallucinations</p>
+    </div>
+  </div>
+  <div class="strap"><b>Better information. Safer AI.</b><br>Detect · Verify · Explain · Build trust</div>
+</div>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="nav-item active" data-view="home" onclick="switchView('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      Home
+    </div>
+    <div class="nav-item" data-view="new" onclick="goNewAnalysis()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      New Analysis
+    </div>
+    <div class="nav-item" data-view="history" onclick="switchView('history')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 5v5h5"/><path d="M12 7v5l3 3"/></svg>
+      History
+    </div>
+    <div class="nav-item" data-view="modelcomp" onclick="switchView('modelcomp')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+      Model Comparison
+    </div>
+    <div class="nav-item" data-view="benchmark" onclick="switchView('benchmark')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></svg>
+      Benchmark
+    </div>
+    <div class="nav-item" data-view="settings" onclick="switchView('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.56V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+      Settings
+    </div>
+    <div class="sidebar-foot">Flask + Claude backend.<br>Scans persisted in the database.</div>
+  </div>
+
+  <div class="main">
+
+    <!-- HOME / ANALYZE VIEW -->
+    <div id="view-home">
+      <div class="panel search-card">
+        <div class="panel-title" style="margin-bottom:12px;"><span class="t">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Analyze LLM Response
+        </span></div>
+        <div class="search-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="question" placeholder="Who was the first president of India?">
+          <button class="scan-btn" id="scanBtn" onclick="runScan()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v3m0 12v3m9-9h-3M6 12H3m14.5-6.5-2 2m-9 9-2 2m13 0-2-2m-9-9-2-2"/><circle cx="12" cy="12" r="4"/></svg>
+            Scan
+          </button>
+        </div>
+        <span class="adv-toggle" onclick="toggleAdv()" id="advToggle">+ Paste an existing response to audit instead of generating one</span>
+        <div class="adv-box" id="advBox">
+          <div class="lbl">Response to audit</div>
+          <textarea id="response" placeholder="Paste the AI-generated answer you want audited..."></textarea>
+        </div>
+      </div>
+
+      <div id="statusArea"></div>
+
+      <div id="results">
+        <div class="row3">
+          <div class="panel gauge-card">
+            <div class="gauge-label">HALLUCINATION RISK SCORE</div>
+            <div class="gauge-ring" id="riskRing"><div class="gauge-value" id="riskVal">–</div></div>
+            <div class="gauge-sub" id="riskSub"></div>
+          </div>
+          <div class="panel gauge-card">
+            <div class="gauge-label">TRUST SCORE</div>
+            <div class="gauge-ring" id="trustRing"><div class="gauge-value" id="trustVal">–</div></div>
+            <div class="gauge-sub" id="trustSub"></div>
+          </div>
+          <div class="panel verdict-card">
+            <div class="verdict-eyebrow">Overall Verdict</div>
+            <div class="verdict-badge" id="verdictBadge"></div>
+            <div class="verdict-detail" id="verdictDetail"></div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="panel">
+            <div class="panel-title"><span class="t">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Claim Analysis
+            </span><button class="view-link" onclick="toggleClaimDetails()" id="claimDetailsLink">View Details</button></div>
+            <div id="claimList"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><span class="t">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              Highlighted Response
+            </span></div>
+            <div class="hl-box" id="hlResponse"></div>
+            <div class="legend">
+              <div class="legend-item"><span class="legend-dot" style="background:var(--green);"></span>Correct claim</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--amber);"></span>Suspicious claim</div>
+              <div class="legend-item"><span class="legend-dot" style="background:var(--red);"></span>Hallucination</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="panel">
+            <div class="panel-title"><span class="t">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 7v6c0 5 3.8 8.7 9 9 5.2-.3 9-4 9-9V7z"/></svg>
+              Evidence Panel
+            </span></div>
+            <div class="ev-tabs">
+              <span class="ev-tab support">Supporting Evidence</span>
+              <span class="ev-tab contra">Contradicting Evidence</span>
+            </div>
+            <div class="ev-block"><div id="evSupport"></div></div>
+            <div class="ev-block"><div id="evContra"></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><span class="t">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg>
+              Hallucination Type
+            </span></div>
+            <div class="type-badge" id="typeBadge"></div>
+            <div class="cvc-sub">Confidence vs Correctness</div>
+            <div class="cvc-row">
+              <div class="cvc-label"><span>Confidence</span><span id="confVal"></span></div>
+              <div class="cvc-track"><div class="cvc-fill" id="confFill" style="background:var(--cyan);"></div></div>
+            </div>
+            <div class="cvc-row">
+              <div class="cvc-label"><span>Correctness</span><span id="corrVal"></span></div>
+              <div class="cvc-track"><div class="cvc-fill" id="corrFill" style="background:var(--violet);"></div></div>
+            </div>
+            <div class="severity-tag" id="severityTag"></div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="panel">
+            <div class="panel-title"><span class="t">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+              Verification Signals
+            </span></div>
+            <div id="sigList"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><span class="t">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 7v6c0 5 3.8 8.7 9 9 5.2-.3 9-4 9-9V7z"/></svg>
+              Source Reliability
+            </span></div>
+            <div id="srcList"></div>
+            <div class="src-note">Typical reliability by source category, not specific citations.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Quick Actions</div>
+          <div class="qa-row">
+            <button class="qa-btn" onclick="viewFullReport()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              View Full Report
+            </button>
+            <button class="qa-btn" onclick="window.print()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+              Export PDF
+            </button>
+            <button class="qa-btn" onclick="copySummary()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5 15.4 6.5M8.6 13.5l6.8 4"/></svg>
+              Share Analysis
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY VIEW -->
+    <div id="view-history" style="display:none;">
+      <div class="panel">
+        <div class="panel-title">History</div>
+        <div id="historyList"><div class="empty-state">No scans yet — run an analysis to see it here.</div></div>
+      </div>
+    </div>
+
+    <!-- MODEL COMPARISON VIEW -->
+    <div id="view-modelcomp" style="display:none;">
+      <div class="panel">
+        <div class="panel-title">Model Comparison</div>
+        <div id="modelCompBody"></div>
+      </div>
+    </div>
+
+    <!-- BENCHMARK VIEW -->
+    <div id="view-benchmark" style="display:none;">
+      <div class="panel">
+        <div class="panel-title">Benchmark</div>
+        <div id="benchmarkBody"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div id="view-settings" style="display:none;">
+      <div class="panel">
+        <div class="panel-title">Settings</div>
+        <div class="settings-row"><span class="k">Backend API</span><span class="v" id="apiBaseDisplay"></span></div>
+        <div class="settings-row"><span class="k">Verification model</span><span class="v">set via CLAUDE_MODEL on the server</span></div>
+        <div class="settings-row"><span class="k">Storage</span><span class="v">Supabase Postgres or local SQLite</span></div>
+        <div class="settings-row"><span class="k">Theme</span><span class="v">dark</span></div>
+        <div class="qa-row" style="margin-top:16px;">
+          <button class="qa-btn" onclick="clearHistory()">Clear scan history</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Point this at your deployed Flask backend (see backend/README instructions).
+  // Defaults to localhost for local development.
+  const API_BASE = window.HALLUCIGUARD_API_BASE || "http://localhost:5000";
+</script>
+<script>
+let lastResult = null;
+let lastQuestion = "";
+let lastResponseText = "";
+
+function switchView(view){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===view));
+  ['home','history','modelcomp','benchmark','settings'].forEach(v=>{
+    document.getElementById('view-'+v).style.display = (v===view)?'block':'none';
+  });
+  if(view==='history') renderHistory();
+  if(view==='modelcomp') renderModelComparison();
+  if(view==='benchmark') renderBenchmark();
+}
+
+function goNewAnalysis(){
+  resetForm();
+  switchView('home');
+}
+
+function toggleAdv(){
+  const box = document.getElementById('advBox');
+  box.classList.toggle('open');
+  document.getElementById('advToggle').textContent = box.classList.contains('open')
+    ? '– Hide response field'
+    : '+ Paste an existing response to audit instead of generating one';
+}
+
+function toggleClaimDetails(){
+  const shown = document.querySelectorAll('.claim-explain.show').length > 0;
+  document.querySelectorAll('.claim-explain').forEach(e=>e.classList.toggle('show', !shown));
+  document.getElementById('claimDetailsLink').textContent = shown ? 'View Details' : 'Hide Details';
+}
+
+function viewFullReport(){
+  document.querySelectorAll('.claim-explain').forEach(e=>e.classList.add('show'));
+  document.getElementById('claimDetailsLink').textContent = 'Hide Details';
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+}
+
+function resetForm(){
+  document.getElementById('question').value = "";
+  document.getElementById('response').value = "";
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('statusArea').innerHTML = "";
+}
+
+function setStatus(html){ document.getElementById('statusArea').innerHTML = html; }
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+function riskColor(pct){ if(pct>=60) return 'var(--red)'; if(pct>=30) return 'var(--amber)'; return 'var(--green)'; }
+function trustColor(pct){ if(pct>=70) return 'var(--green)'; if(pct>=40) return 'var(--amber)'; return 'var(--red)'; }
+
+async function apiPost(path, body){
+  const res = await fetch(API_BASE + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body || {}),
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || ("Request failed: " + res.status));
+  return data;
+}
+
+async function apiGet(path){
+  const res = await fetch(API_BASE + path);
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || ("Request failed: " + res.status));
+  return data;
+}
+
+async function apiDelete(path){
+  const res = await fetch(API_BASE + path, { method: "DELETE" });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || ("Request failed: " + res.status));
+  return data;
+}
+
+async function runScan(){
+  const question = document.getElementById('question').value.trim();
+  const resp = document.getElementById('response').value.trim();
+  if(!question){ setStatus('<div class="error-box">Enter a question first.</div>'); return; }
+
+  document.getElementById('scanBtn').disabled = true;
+  document.getElementById('results').style.display = 'none';
+  setStatus('<div class="loading-wrap"><div class="spinner"></div>Running verification against the backend...</div>');
+
+  try{
+    const data = await apiPost('/api/scan', { question, response: resp });
+    lastResult = data.result;
+    lastQuestion = data.question;
+    lastResponseText = data.response;
+    document.getElementById('response').value = lastResponseText;
+    renderResult(lastResult);
+    setStatus('');
+  }catch(err){
+    console.error(err);
+    setStatus('<div class="error-box">Something went wrong analyzing that response. Please try again — ' + (err.message || 'unknown error') + '</div>');
+  }finally{
+    document.getElementById('scanBtn').disabled = false;
+  }
+}
+
+function renderResult(r){
+  document.getElementById('results').style.display = 'flex';
+
+  const risk = Math.max(0, Math.min(100, r.hallucination_risk ?? 0));
+  const trust = Math.max(0, Math.min(100, r.trust_score ?? 0));
+  const rc = riskColor(risk), tc = trustColor(trust);
+
+  const riskRing = document.getElementById('riskRing');
+  riskRing.style.setProperty('--pct', risk); riskRing.style.setProperty('--ring-color', rc);
+  document.getElementById('riskVal').textContent = risk + '%'; document.getElementById('riskVal').style.color = rc;
+  document.getElementById('riskSub').textContent = risk>=60?'High Risk':risk>=30?'Moderate Risk':'Low Risk';
+  document.getElementById('riskSub').style.color = rc; document.getElementById('riskSub').style.background='color-mix(in srgb, '+rc+' 16%, transparent)';
+
+  const trustRing = document.getElementById('trustRing');
+  trustRing.style.setProperty('--pct', trust); trustRing.style.setProperty('--ring-color', tc);
+  document.getElementById('trustVal').textContent = trust + '%'; document.getElementById('trustVal').style.color = tc;
+  document.getElementById('trustSub').textContent = trust>=70?'High Trust':trust>=40?'Moderate Trust':'Low Trust';
+  document.getElementById('trustSub').style.color = tc; document.getElementById('trustSub').style.background='color-mix(in srgb, '+tc+' 16%, transparent)';
+
+  const verdict = r.verdict || 'Partially Reliable';
+  const vBadge = document.getElementById('verdictBadge');
+  let vColor = 'var(--amber)';
+  if(verdict.toLowerCase().includes('reliable') && !verdict.toLowerCase().includes('partially')){ vColor='var(--green)'; }
+  if(verdict.toLowerCase().includes('hallucination')){ vColor='var(--red)'; }
+  vBadge.style.color = vColor; vBadge.style.background = 'color-mix(in srgb, ' + vColor + ' 16%, transparent)';
+  vBadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 9v4m0 4h.01M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>' + verdict;
+  document.getElementById('verdictDetail').textContent = r.verdict_detail || '';
+
+  const claimList = document.getElementById('claimList'); claimList.innerHTML = '';
+  (r.claims||[]).forEach(c=>{
+    const status = (c.status||'uncertain').toLowerCase();
+    const risk_l = (c.risk||'medium').toLowerCase();
+    const cls = ['correct','incorrect','uncertain'].includes(status)?status:'uncertain';
+    const icon = cls==='correct' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>'
+               : cls==='incorrect' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+               : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 9v4m0 4h.01"/></svg>';
+    const div = document.createElement('div');
+    div.className = 'claim ' + cls;
+    div.innerHTML = `<div class="claim-icon">${icon}</div><div style="flex:1;"><span class="claim-text">${escapeHtml(c.text||'')}</span><span class="claim-tag">${status.charAt(0).toUpperCase()+status.slice(1)} (${risk_l.charAt(0).toUpperCase()+risk_l.slice(1)} Risk)</span><div class="claim-explain">${escapeHtml(c.explanation||'')}</div></div>`;
+    claimList.appendChild(div);
+  });
+  if(!r.claims || !r.claims.length) claimList.innerHTML = '<div class="empty-state">No discrete claims identified.</div>';
+  document.getElementById('claimDetailsLink').textContent = 'View Details';
+
+  const hl = document.getElementById('hlResponse'); hl.innerHTML = '';
+  (r.highlighted_response||[]).forEach(seg=>{
+    const type = (seg.type||'neutral').toLowerCase();
+    const span = document.createElement('span');
+    if(type!=='neutral') span.className = 'seg-' + (['correct','suspicious','hallucination'].includes(type)?type:'neutral');
+    span.textContent = seg.text||''; hl.appendChild(span);
+  });
+  if(!r.highlighted_response || !r.highlighted_response.length) hl.textContent = lastResponseText;
+
+  const evS = document.getElementById('evSupport'); evS.innerHTML = '';
+  const sup = r.supporting_evidence || [];
+  if(!sup.length){ evS.innerHTML = '<div class="ev-line" style="border:none;color:var(--text-faint);">None noted</div>'; }
+  else sup.forEach(e=>{
+    const line = document.createElement('div'); line.className = 'ev-line';
+    const relBadge = (typeof e.reliability === 'number') ? `<span class="ev-score">${e.reliability}/100</span>` : '';
+    line.innerHTML = `<span>${escapeHtml(e.text || e)}</span>${relBadge}`;
+    evS.appendChild(line);
+  });
+
+  const evC = document.getElementById('evContra'); evC.innerHTML = '';
+  const con = r.contradicting_evidence || [];
+  if(!con.length){ evC.innerHTML = '<div class="ev-line" style="border:none;color:var(--text-faint);">None noted</div>'; }
+  else con.forEach(e=>{
+    const line = document.createElement('div'); line.className = 'ev-line';
+    const relBadge = (typeof e.reliability === 'number') ? `<span class="ev-score">${e.reliability}/100</span>` : '';
+    line.innerHTML = `<span>${escapeHtml(e.text || e)}</span>${relBadge}`;
+    evC.appendChild(line);
+  });
+
+  const typeBadge = document.getElementById('typeBadge');
+  const htype = r.hallucination_type || 'None Detected';
+  typeBadge.textContent = htype;
+  typeBadge.className = 'type-badge' + (htype.toLowerCase().includes('none') ? ' none' : '');
+
+  const conf = Math.max(0, Math.min(100, r.confidence_pct ?? 0));
+  const corr = Math.max(0, Math.min(100, r.correctness_pct ?? 0));
+  document.getElementById('confVal').textContent = conf + '%';
+  document.getElementById('confFill').style.width = conf + '%';
+  document.getElementById('corrVal').textContent = corr + '%';
+  document.getElementById('corrFill').style.width = corr + '%';
+  const gap = conf - corr;
+  const sevTag = document.getElementById('severityTag');
+  if(gap >= 50){ sevTag.textContent = 'Severe Hallucination'; sevTag.style.background='rgba(248,113,113,0.16)'; sevTag.style.color='var(--red)'; }
+  else if(gap >= 25){ sevTag.textContent = 'Moderate Hallucination'; sevTag.style.background='rgba(251,191,36,0.16)'; sevTag.style.color='var(--amber)'; }
+  else { sevTag.textContent = 'Low / No Hallucination'; sevTag.style.background='rgba(52,211,153,0.16)'; sevTag.style.color='var(--green)'; }
+
+  const sigList = document.getElementById('sigList'); sigList.innerHTML = '';
+  (r.verification_signals||[]).forEach(s=>{
+    const pct = Math.max(0, Math.min(100, s.pct ?? 0));
+    const row = document.createElement('div'); row.className = 'sig-row';
+    row.innerHTML = `<div class="sig-label"><span>${escapeHtml(s.label||'')}</span><span>${pct}%</span></div><div class="sig-track"><div class="sig-fill" style="width:${pct}%;"></div></div>`;
+    sigList.appendChild(row);
+  });
+
+  const srcList = document.getElementById('srcList'); srcList.innerHTML = '';
+  const dotColors = ['var(--cyan)','var(--violet)','var(--amber)','var(--text-faint)'];
+  (r.source_reliability||[]).forEach((s,i)=>{
+    const item = document.createElement('div'); item.className = 'src-item';
+    item.innerHTML = `<span class="src-name"><span class="src-dot" style="background:${dotColors[i%dotColors.length]};"></span>${escapeHtml(s.type||'')}</span><span class="src-score">${s.score ?? '–'}</span>`;
+    srcList.appendChild(item);
+  });
+}
+
+async function renderHistory(){
+  const el = document.getElementById('historyList');
+  el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div>Loading history...</div>';
+  try{
+    const entries = await apiGet('/api/history?limit=50');
+    if(!entries.length){ el.innerHTML = '<div class="empty-state">No scans yet — run an analysis to see it here.</div>'; return; }
+    el.innerHTML = '';
+    entries.forEach(en=>{
+      const risk = en.result.hallucination_risk ?? 0;
+      const color = riskColor(risk);
+      const div = document.createElement('div'); div.className = 'hist-item';
+      div.onclick = ()=>{
+        document.getElementById('question').value = en.question;
+        document.getElementById('response').value = en.response;
+        document.getElementById('advBox').classList.add('open');
+        document.getElementById('advToggle').textContent = '– Hide response field';
+        lastResult = en.result; lastQuestion = en.question; lastResponseText = en.response;
+        switchView('home'); renderResult(en.result);
+      };
+      div.innerHTML = `<div><div class="hist-q">${escapeHtml(en.question)}</div><div class="hist-meta">${new Date(en.created_at).toLocaleString()}</div></div><div class="hist-tag" style="background:color-mix(in srgb, ${color} 18%, transparent); color:${color};">${risk}% risk</div>`;
+      el.appendChild(div);
+    });
+  }catch(e){ el.innerHTML = '<div class="empty-state">History unavailable — is the backend running at ' + API_BASE + '?</div>'; }
+}
+
+async function renderModelComparison(){
+  const el = document.getElementById('modelCompBody');
+  if(!lastResult){
+    el.innerHTML = '<div class="empty-state">Run a scan first — this view compares the verification signals used in your most recent analysis.</div>';
+    return;
+  }
+  el.innerHTML = `<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:16px;line-height:1.6;">
+    HalluciGuard AI runs on a single verification model rather than polling several third-party LLMs, so this compares the different verification checks it ran against your last scan — not competing AI providers.
+  </div><div id="sigListDup"></div>`;
+  const dup = document.getElementById('sigListDup');
+  (lastResult.verification_signals||[]).forEach(s=>{
+    const pct = Math.max(0, Math.min(100, s.pct ?? 0));
+    const row = document.createElement('div'); row.className = 'sig-row';
+    row.innerHTML = `<div class="sig-label"><span>${escapeHtml(s.label||'')}</span><span>${pct}%</span></div><div class="sig-track"><div class="sig-fill" style="width:${pct}%;"></div></div>`;
+    dup.appendChild(row);
+  });
+}
+
+async function renderBenchmark(){
+  const el = document.getElementById('benchmarkBody');
+  el.innerHTML = '<div class="loading-wrap"><div class="spinner"></div>Crunching stats from the database...</div>';
+  try{
+    const b = await apiGet('/api/benchmark');
+    if(!b.total_scans){ el.innerHTML = '<div class="empty-state">No scans yet — benchmark stats appear here once you run analyses.</div>'; return; }
+    el.innerHTML = `<div class="bm-grid">
+      <div class="bm-tile"><div class="bm-num">${b.total_scans}</div><div class="bm-lbl">Total scans</div></div>
+      <div class="bm-tile"><div class="bm-num">${b.avg_risk}%</div><div class="bm-lbl">Avg. hallucination risk</div></div>
+      <div class="bm-tile"><div class="bm-num">${b.avg_trust}%</div><div class="bm-lbl">Avg. trust score</div></div>
+      <div class="bm-tile"><div class="bm-num">${b.hallucination_rate}%</div><div class="bm-lbl">Flagged as hallucinated</div></div>
+    </div>`;
+  }catch(e){ el.innerHTML = '<div class="empty-state">Benchmark data unavailable — is the backend running at ' + API_BASE + '?</div>'; }
+}
+
+async function clearHistory(){
+  try{
+    await apiDelete('/api/history');
+    setStatus('');
+    renderHistory();
+  }catch(e){ console.warn('clear failed', e); }
+}
+
+function copySummary(){
+  if(!lastResult) return;
+  const r = lastResult;
+  const lines = [
+    `HalluciGuard AI — Analysis Summary`,
+    `Question: ${lastQuestion}`,
+    `Response: ${lastResponseText}`, ``,
+    `Verdict: ${r.verdict} — ${r.verdict_detail}`,
+    `Hallucination risk: ${r.hallucination_risk}%   Trust score: ${r.trust_score}%`,
+    `Hallucination type: ${r.hallucination_type}`, ``,
+    `Claims:`,
+    ...(r.claims||[]).map(c=>` - [${(c.status||'').toUpperCase()}] ${c.text} — ${c.explanation}`)
+  ];
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    setStatus('<div style="color:var(--green);font-size:12.5px;padding:6px 2px;">Summary copied to clipboard.</div>');
+    setTimeout(()=>setStatus(''), 2500);
+  }).catch(()=>{});
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const el = document.getElementById('apiBaseDisplay');
+  if(el) el.textContent = API_BASE;
+});
+</script>
+</body>
+</html>
